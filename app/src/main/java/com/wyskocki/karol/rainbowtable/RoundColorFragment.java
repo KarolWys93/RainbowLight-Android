@@ -67,15 +67,33 @@ public class RoundColorFragment extends Fragment {
 
         colorPicker.setShowOldCenterColor(false);
 
-        colorPicker.setOnColorChangedListener(new ColorPicker.OnColorChangedListener() {
+
+        colorPicker.setOnColorSelectedListener(new ColorPicker.OnColorSelectedListener() {
             @Override
-            public void onColorChanged(int color) {
-                colorChanged();
+            public void onColorSelected(int color) {
+                //colorPicker.setOldCenterColor(color);
+                colorSelected(color);
+            }
+        });
+
+        valueBar.setOnValueSelectListener(new ValueBar.OnValueSelectListener() {
+            @Override
+            public void onValueSelect(int value) {
+                colorSelected(value);
+            }
+        });
+
+        saturationBar.setOnSaturationSelectListener(new SaturationBar.OnSaturationSelectListener() {
+            @Override
+            public void onSaturationSelect(int value) {
+                colorSelected(value);
             }
         });
 
         colorPicker.addSaturationBar(saturationBar);
         colorPicker.addValueBar(valueBar);
+        valueBar.setColorPicker(colorPicker);
+        saturationBar.setColorPicker(colorPicker);
 
         valueBar.setEnabled(false);
 
@@ -106,20 +124,15 @@ public class RoundColorFragment extends Fragment {
                 int g = ((SeekBar) dialogView.findViewById(R.id.greenBar)).getProgress();
                 int b = ((SeekBar) dialogView.findViewById(R.id.blueBar)).getProgress();
                 colorPicker.setColor(Color.argb(255, r,g,b));
+                colorSelected(Color.argb(255, r, g, b));
             }
         });
         builder.create().show();
     }
 
-    public void colorChanged(){
-        //Toast.makeText(getContext(), "Color: "+ Integer.toHexString(colorPicker.getColor()), Toast.LENGTH_SHORT).show();
-    }
-
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onColorSelected(int color) {
+    public void colorSelected(int color) {
         if (mListener != null) {
-            mListener.colorSelected();
+            mListener.colorSelected(color);
         }
     }
 

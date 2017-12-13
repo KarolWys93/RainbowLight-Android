@@ -6,5 +6,5 @@ package com.wyskocki.karol.rainbowtable;
 
 public interface OnFragmentColorSelected {
 
-    void colorSelected();
+    void colorSelected(int color);
 }

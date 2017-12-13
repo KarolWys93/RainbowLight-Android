@@ -166,6 +166,26 @@ public class SaturationBar extends View {
         return this.onSaturationChangedListener;
     }
 
+
+	/**
+	 * Interface and listener so that changes in ValueBar are sent
+	 * to the host activity/fragment
+	 */
+	private OnSaturationSelectListener onSaturationSelectListener;
+
+
+	public interface OnSaturationSelectListener {
+		public void onSaturationSelect(int value);
+	}
+
+	public void setOnSaturationSelectListener(OnSaturationSelectListener listener) {
+		this.onSaturationSelectListener = listener;
+	}
+
+	public OnSaturationSelectListener getOnSaturationSelectListener() {
+		return this.onSaturationSelectListener;
+	}
+
 	public SaturationBar(Context context) {
 		super(context);
 		init(null, 0);
@@ -402,6 +422,12 @@ public class SaturationBar extends View {
 			break;
 		case MotionEvent.ACTION_UP:
 			mIsMovingPointer = false;
+
+			if(onSaturationSelectListener != null && oldChangedListenerSaturation != mColor){
+				onSaturationSelectListener.onSaturationSelect(mColor);
+				oldChangedListenerSaturation = mColor;
+			}
+
 			break;
 		}
 		return true;

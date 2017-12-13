@@ -166,6 +166,26 @@ public class ValueBar extends View {
         return this.onValueChangedListener;
     }
 
+
+	/**
+	 * Interface and listener so that changes in ValueBar are sent
+	 * to the host activity/fragment
+	 */
+	private OnValueSelectListener onValueSelectListener;
+
+
+	public interface OnValueSelectListener {
+		public void onValueSelect(int value);
+	}
+
+	public void setOnValueSelectListener(OnValueSelectListener listener) {
+		this.onValueSelectListener = listener;
+	}
+
+	public OnValueSelectListener getOnValueSelectListener() {
+		return this.onValueSelectListener;
+	}
+
 	public ValueBar(Context context) {
 		super(context);
 		init(null, 0);
@@ -400,6 +420,12 @@ public class ValueBar extends View {
 			break;
 		case MotionEvent.ACTION_UP:
 			mIsMovingPointer = false;
+
+			if(onValueSelectListener != null && oldChangedListenerValue != mColor){
+				onValueSelectListener.onValueSelect(mColor);
+				oldChangedListenerValue = mColor;
+			}
+
 			break;
 		}
 		return true;
