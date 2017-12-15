@@ -1,9 +1,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.wyskocki.karol.rainbowtable.MainActivity" >
-    <item android:id="@+id/action_settings"
-        android:title="@string/action_settings"
+    tools:context="com.wyskocki.karol.rainbowtable.MainActivity">
+    <item
+        android:id="@+id/action_connect"
         android:orderInCategory="100"
+        android:title="Connect"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_cancel"
+        android:orderInCategory="101"
+        android:title="Devices" />
 </menu>
