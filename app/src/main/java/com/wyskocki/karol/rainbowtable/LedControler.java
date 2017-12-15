@@ -14,6 +14,8 @@ import java.util.UUID;
 
 public class LedControler {
 
+    private final boolean testMode = true;
+
     //instruction
     private final int SEND_COLOR = 1;
     private final int SEND_RAINBOW = 82;
@@ -33,11 +35,23 @@ public class LedControler {
         byte red = (byte) Color.red(color);
         byte green = (byte) Color.green(color);
         byte blue = (byte) Color.blue(color);
-        send(new byte[]{SEND_COLOR, red, green, blue});
+        if(testMode){
+            send(String.format("<%d %d %d %d> ",
+                    SEND_COLOR,
+                    Color.red(color),
+                    Color.green(color),
+                    Color.blue(color)).getBytes());
+        }else {
+            send(new byte[]{SEND_COLOR, red, green, blue});
+        }
     }
 
     public void sendAnimation(int speed, int amplitude) throws IOException {
-        send(new byte[]{SEND_RAINBOW, (byte)speed, (byte)amplitude});
+        if(testMode){
+            send(String.format("%d %d %d", SEND_RAINBOW, speed, amplitude).getBytes());
+        }else {
+            send(new byte[]{SEND_RAINBOW, (byte) speed, (byte) amplitude});
+        }
     }
 
 
@@ -76,7 +90,7 @@ public class LedControler {
     }
 
     public void close() throws IOException {
-            outStream.close();
-            socket.close();
+        outStream.close();
+        socket.close();
     }
 }
