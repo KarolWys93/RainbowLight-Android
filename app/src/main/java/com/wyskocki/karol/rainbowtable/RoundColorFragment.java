@@ -1,27 +1,31 @@
 package com.wyskocki.karol.rainbowtable;
 
-import android.app.Dialog;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Color;
-import android.net.Uri;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.larswerkman.holocolorpicker.ColorPicker;
 import com.larswerkman.holocolorpicker.SaturationBar;
 import com.larswerkman.holocolorpicker.ValueBar;
+import com.wyskocki.karol.dsp.DigitalFilter;
+import com.wyskocki.karol.dsp.MeanFilter;
+
+import java.util.List;
 
 
 /**
@@ -37,6 +41,10 @@ public class RoundColorFragment extends Fragment {
     ColorPicker colorPicker;
     SaturationBar saturationBar;
     ValueBar valueBar;
+
+    private Sensor lightSensor;
+    private SensorEventListener sensorListener;
+    private DigitalFilter lightSensorFilter;
 
     private OnFragmentColorSelected mListener;
 
@@ -56,7 +64,7 @@ public class RoundColorFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view =  inflater.inflate(R.layout.fragment_round_color, container, false);
@@ -72,21 +80,21 @@ public class RoundColorFragment extends Fragment {
             @Override
             public void onColorSelected(int color) {
                 //colorPicker.setOldCenterColor(color);
-                colorSelected(color);
+                colorSelected(colorPicker.getColor());
             }
         });
 
         valueBar.setOnValueSelectListener(new ValueBar.OnValueSelectListener() {
             @Override
             public void onValueSelect(int value) {
-                colorSelected(value);
+                colorSelected(colorPicker.getColor());
             }
         });
 
         saturationBar.setOnSaturationSelectListener(new SaturationBar.OnSaturationSelectListener() {
             @Override
             public void onSaturationSelect(int value) {
-                colorSelected(value);
+                colorSelected(colorPicker.getColor());
             }
         });
 
@@ -103,6 +111,20 @@ public class RoundColorFragment extends Fragment {
                 rgbColorDialog();
             }
         });
+
+        lightSensor = getLightSensor();
+
+        if (lightSensor == null){
+            ((CheckBox)view.findViewById(R.id.autoValueChBox)).setEnabled(false);
+        }else {
+            ((CheckBox)view.findViewById(R.id.autoValueChBox)).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    CheckBox checkBox = (CheckBox) v;
+                    setLightSensorEnable(checkBox.isChecked());
+                }
+            });
+        }
 
         return view;
     }
@@ -130,6 +152,44 @@ public class RoundColorFragment extends Fragment {
         builder.create().show();
     }
 
+
+    private Sensor getLightSensor(){
+        Activity activity = getActivity();
+        SensorManager sensorManager = (SensorManager) activity.getSystemService( Context.SENSOR_SERVICE );
+        List<Sensor> sensors = sensorManager.getSensorList(Sensor.TYPE_LIGHT);
+        if(sensors.isEmpty()){
+            return null;
+        }
+        return sensors.get(0);
+    }
+
+    private void setLightSensorEnable(Boolean enable){
+        Activity activity = getActivity();
+        SensorManager sensorManager = (SensorManager) activity.getSystemService( Context.SENSOR_SERVICE );
+
+        if(enable){
+            lightSensorFilter = new MeanFilter(16);
+            sensorListener = new SensorEventListener() {
+                @Override
+                public void onSensorChanged(SensorEvent event) {
+                    float max = 40;
+                    float value = 1/max * event.values[0];
+                    value = (float)lightSensorFilter.filter(Math.min(value, 1.0f));
+                    valueBar.setValue(value);
+                    colorSelected(colorPicker.getColor());
+                }
+                @Override
+                public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+            };
+
+            sensorManager.registerListener(sensorListener, lightSensor, SensorManager.SENSOR_DELAY_GAME);//SensorManager.SENSOR_DELAY_UI);
+            Toast.makeText(getContext(), "Auto value mode enabled", Toast.LENGTH_SHORT).show();
+        }else {
+            if (sensorListener != null)
+                sensorManager.unregisterListener(sensorListener);
+        }
+    }
+
     public void colorSelected(int color) {
         if (mListener != null) {
             mListener.colorSelected(color);
@@ -151,5 +211,11 @@ public class RoundColorFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onDestroy() {
+        setLightSensorEnable(false);
+        super.onDestroy();
     }
 }

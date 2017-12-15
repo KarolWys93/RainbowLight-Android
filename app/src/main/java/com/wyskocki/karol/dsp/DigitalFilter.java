@@ -1,4 +1,4 @@
-package DSP;
+package com.wyskocki.karol.dsp;
 
 /**
  * Created by Karol on 03-06-2017.

@@ -1,4 +1,4 @@
-package DSP;
+package com.wyskocki.karol.dsp;
 
 import java.util.HashMap;
 import java.util.Map;
