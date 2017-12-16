@@ -7,8 +7,4 @@
         android:orderInCategory="100"
         android:title="Connect"
         app:showAsAction="never" />
-    <item
-        android:id="@+id/action_cancel"
-        android:orderInCategory="101"
-        android:title="Devices" />
 </menu>

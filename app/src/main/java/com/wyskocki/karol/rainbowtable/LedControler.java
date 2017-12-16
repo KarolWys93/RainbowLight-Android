@@ -3,6 +3,7 @@ package com.wyskocki.karol.rainbowtable;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.graphics.Color;
+import android.util.Log;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -14,7 +15,7 @@ import java.util.UUID;
 
 public class LedControler {
 
-    private final boolean testMode = true;
+    private final boolean testMode = false;
 
     //instruction
     private final int SEND_COLOR = 1;
@@ -63,6 +64,7 @@ public class LedControler {
     }
 
     public void connect() throws IOException {
+        Log.i("BT connection: ", "Start");
         BluetoothSocket tmp = null;
         tmp = btDevice.createRfcommSocketToServiceRecord(PRIVATE_UUID);
         socket = tmp;

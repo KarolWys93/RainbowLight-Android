@@ -184,6 +184,7 @@ public class RoundColorFragment extends Fragment {
                     float max = 40;
                     float value = 1/max * event.values[0];
                     value = (float)lightSensorFilter.filter(Math.min(value, 1.0f));
+                    Log.i("Light value", " "+value);
                     valueBar.setValue(value);
                     if(fragmentIsVisible) {
                         colorSelected(colorPicker.getColor());

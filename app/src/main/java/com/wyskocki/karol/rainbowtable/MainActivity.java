@@ -15,6 +15,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -63,9 +64,12 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
         //setupTabIcons(tabLayout);
 
         if(savedInstanceState != null) {
+            Log.i("savedInstanceState: ", "exist");
             if (savedInstanceState.getBoolean("wasConnected", false)) {
+                Log.i("savedInstanceState", "was connected");
                 selectedDeviceName = savedInstanceState.getString("btDeviceName", null);
                 if (selectedDeviceName != null) {
+                    Log.i("savedInstanceState", "start connection");
                     startConnection();
                     //((MenuItem) menu.findItem(R.id.action_connect)).setTitle("Disconnect");
                 }
@@ -74,8 +78,8 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
     }
 
     private void setupTabIcons(TabLayout tabLayout) {
-        tabLayout.getTabAt(0).setIcon(R.drawable.ic_adjust_white_24dp);
-        tabLayout.getTabAt(1).setIcon(R.drawable.ic_palette_white_24dp);
+        //tabLayout.getTabAt(0).setIcon(R.drawable.ic_adjust_white_24dp);
+        //tabLayout.getTabAt(1).setIcon(R.drawable.ic_palette_white_24dp);
         //tabLayout.getTabAt(2).setIcon(R.drawable.ic_play_circle_outline_white_24dp);
     }
     @Override
@@ -83,6 +87,8 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu, menu);
         this.menu = menu;
+        if(btLedControl != null && btLedControl.isConnected())
+            menu.findItem(R.id.action_connect).setTitle("Disconnect");
         return true;
     }
 
@@ -101,12 +107,31 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
                 startActivityForResult(enableBT, REQUEST_ENABLE_BT);
             }else{
                 if (btLedControl == null || !btLedControl.isConnected()) {
-                    if(selectedDeviceName != null) {
-                        startConnection();
-                        ((MenuItem)menu.findItem(R.id.action_connect)).setTitle("Disconnect");
-                    }else {
-                        Toast.makeText(getBaseContext(), "choose device", Toast.LENGTH_SHORT).show();
+
+
+                    Set<BluetoothDevice> btList = BluetoothAdapter.getDefaultAdapter().getBondedDevices();
+
+
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setTitle("Choose device");
+                    final ArrayList<CharSequence> deviceNames = new ArrayList<>();
+
+                    for (BluetoothDevice device : btList) {
+                        deviceNames.add(device.getName());
                     }
+
+                    builder.setItems(deviceNames.toArray(new CharSequence[0]),new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            selectedDeviceName = (String) deviceNames.get(which);
+                            startConnection();
+                            ((MenuItem)menu.findItem(R.id.action_connect)).setTitle("Disconnect");
+                        }
+                    });
+
+
+                    builder.create().show();
+
                 }else{
                     try {
                         btLedControl.close();
@@ -116,32 +141,6 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
                     }
                 }
             }
-        }
-
-        if(id == R.id.action_cancel){
-
-
-            Set<BluetoothDevice> btList = BluetoothAdapter.getDefaultAdapter().getBondedDevices();
-
-
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Choose device");
-            final ArrayList<CharSequence> deviceNames = new ArrayList<>();
-
-            for (BluetoothDevice device : btList) {
-                deviceNames.add(device.getName());
-            }
-
-            builder.setItems(deviceNames.toArray(new CharSequence[0]),new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    selectedDeviceName = (String) deviceNames.get(which);
-                }
-            });
-
-
-            builder.create().show();
-
         }
 
         return super.onOptionsItemSelected(item);
