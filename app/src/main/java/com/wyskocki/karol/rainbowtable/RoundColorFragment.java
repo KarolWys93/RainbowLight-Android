@@ -11,6 +11,7 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,6 +46,7 @@ public class RoundColorFragment extends Fragment {
     private Sensor lightSensor;
     private SensorEventListener sensorListener;
     private DigitalFilter lightSensorFilter;
+    private boolean fragmentIsVisible = false;
 
     private OnFragmentColorSelected mListener;
 
@@ -114,16 +116,23 @@ public class RoundColorFragment extends Fragment {
 
         lightSensor = getLightSensor();
 
+        CheckBox autoValueCheckBox = view.findViewById(R.id.autoValueChBox);
         if (lightSensor == null){
-            ((CheckBox)view.findViewById(R.id.autoValueChBox)).setEnabled(false);
+            autoValueCheckBox.setEnabled(false);
         }else {
-            ((CheckBox)view.findViewById(R.id.autoValueChBox)).setOnClickListener(new View.OnClickListener() {
+            setLightSensorEnable(autoValueCheckBox.isChecked());
+            autoValueCheckBox.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     CheckBox checkBox = (CheckBox) v;
                     setLightSensorEnable(checkBox.isChecked());
                 }
             });
+
+        }
+
+        if(savedInstanceState != null){
+            setLightSensorEnable(savedInstanceState.getBoolean("autoValue", false));
         }
 
         return view;
@@ -176,7 +185,9 @@ public class RoundColorFragment extends Fragment {
                     float value = 1/max * event.values[0];
                     value = (float)lightSensorFilter.filter(Math.min(value, 1.0f));
                     valueBar.setValue(value);
-                    colorSelected(colorPicker.getColor());
+                    if(fragmentIsVisible) {
+                        colorSelected(colorPicker.getColor());
+                    }
                 }
                 @Override
                 public void onAccuracyChanged(Sensor sensor, int accuracy) {}
@@ -197,6 +208,12 @@ public class RoundColorFragment extends Fragment {
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("autoValue", ((CheckBox)getActivity().findViewById(R.id.autoValueChBox)).isChecked());
+    }
+
+    @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof OnFragmentColorSelected) {
@@ -208,10 +225,18 @@ public class RoundColorFragment extends Fragment {
     }
 
     @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        fragmentIsVisible = isVisibleToUser;
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
     }
+
+
 
     @Override
     public void onDestroy() {
