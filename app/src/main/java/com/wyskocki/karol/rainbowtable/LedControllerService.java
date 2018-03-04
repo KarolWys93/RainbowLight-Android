@@ -1,8 +1,13 @@
 package com.wyskocki.karol.rainbowtable;
 
+import android.app.Service;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Intent;
 import android.graphics.Color;
+import android.os.Binder;
+import android.os.IBinder;
 import android.util.Log;
 
 import java.io.IOException;
@@ -10,10 +15,10 @@ import java.io.OutputStream;
 import java.util.UUID;
 
 /**
- * Created by karol on 12.12.17.
+ * Created by karol on 04.03.18.
  */
 
-public class LedControler {
+public class LedControllerService extends Service {
 
     private final boolean testMode = false;
 
@@ -23,16 +28,13 @@ public class LedControler {
 
     private static UUID PRIVATE_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
-    private BluetoothDevice btDevice;
+    private BluetoothDevice device;
     private BluetoothSocket socket;
     private OutputStream outStream;
 
 
-    public LedControler(BluetoothDevice device){
-        this.btDevice = device;
-    }
 
-    public void sendColor(int color) throws IOException {
+    public void setColor(int color) throws IOException {
         byte red = (byte) Color.red(color);
         byte green = (byte) Color.green(color);
         byte blue = (byte) Color.blue(color);
@@ -63,12 +65,20 @@ public class LedControler {
         }
     }
 
-    public void connect() throws IOException {
-        Log.i("BT connection: ", "Start");
-        BluetoothSocket tmp = null;
-        tmp = btDevice.createRfcommSocketToServiceRecord(PRIVATE_UUID);
-        socket = tmp;
+    public void connect(BluetoothDevice device) throws IOException {
 
+        //close previous connection (if any exist)
+        close();
+
+        BluetoothAdapter bt = BluetoothAdapter.getDefaultAdapter();
+        bt.cancelDiscovery();
+
+        this.device = device;
+        writeToLog("Start connecting");
+
+        socket = device.createRfcommSocketToServiceRecord(PRIVATE_UUID);
+
+        //TODO move this to worker thread
         Thread connectionThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -88,11 +98,64 @@ public class LedControler {
     }
 
     public boolean isConnected(){
-        return socket.isConnected();
+        if (socket != null)
+            return socket.isConnected();
+        else
+            return false;
+    }
+
+    public String getDeviceName(){
+        return device.getName();
     }
 
     public void close() throws IOException {
-        outStream.close();
-        socket.close();
+        writeToLog("Close connection");
+        if(outStream != null)
+            outStream.close();
+
+        if (socket != null)
+            socket.close();
     }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        writeToLog("Service created");
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        writeToLog("Service start command");
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        try {
+            close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private final IBinder binder = new LedControllerBinder();
+
+    public class LedControllerBinder extends Binder {
+        LedControllerService getService() {
+            return LedControllerService.this;
+        }
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return binder;
+    }
+
+
+    private void writeToLog(String message){
+        Log.d(LedControllerService.class.getName(), message);
+    }
+
 }
