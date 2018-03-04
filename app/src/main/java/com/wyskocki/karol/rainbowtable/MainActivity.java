@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
@@ -43,7 +44,9 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
     private LedControler btLedControl;
     private Menu menu;
 
-    private String selectedDeviceName = null;
+    private DeviceChooser deviceChooser;
+
+    private BluetoothDevice btDevice;
 
     private final int REQUEST_ENABLE_BT = 1;
 
@@ -63,25 +66,37 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
         tabLayout.setupWithViewPager(viewPager);
         //setupTabIcons(tabLayout);
 
+        deviceChooser = new DeviceChooser(this);
+        deviceChooser.addListener(new DeviceChooser.OnSelectListener(){
+
+            @Override
+            public void onSelect(BluetoothDevice device) {
+                btDevice = device;
+                startConnection();
+                ((MenuItem)menu.findItem(R.id.action_connect)).setTitle("Disconnect");
+            }
+        });
+
         if(savedInstanceState != null) {
             Log.i("savedInstanceState: ", "exist");
             if (savedInstanceState.getBoolean("wasConnected", false)) {
                 Log.i("savedInstanceState", "was connected");
-                selectedDeviceName = savedInstanceState.getString("btDeviceName", null);
-                if (selectedDeviceName != null) {
-                    Log.i("savedInstanceState", "start connection");
-                    startConnection();
-                    //((MenuItem) menu.findItem(R.id.action_connect)).setTitle("Disconnect");
-                }
+                //selectedDeviceName = savedInstanceState.getString("btDeviceName", null);
+                //if (selectedDeviceName != null) {
+                //    Log.i("savedInstanceState", "start connection");
+                //   startConnection();
+                //((MenuItem) menu.findItem(R.id.action_connect)).setTitle("Disconnect");
             }
         }
     }
+
 
     private void setupTabIcons(TabLayout tabLayout) {
         //tabLayout.getTabAt(0).setIcon(R.drawable.ic_adjust_white_24dp);
         //tabLayout.getTabAt(1).setIcon(R.drawable.ic_palette_white_24dp);
         //tabLayout.getTabAt(2).setIcon(R.drawable.ic_play_circle_outline_white_24dp);
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -99,7 +114,6 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_connect) {
             BluetoothAdapter bt = BluetoothAdapter.getDefaultAdapter();
             if (!bt.isEnabled()){
@@ -108,29 +122,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
             }else{
                 if (btLedControl == null || !btLedControl.isConnected()) {
 
-
-                    Set<BluetoothDevice> btList = BluetoothAdapter.getDefaultAdapter().getBondedDevices();
-
-
-
-                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                    builder.setTitle("Choose device");
-                    final ArrayList<CharSequence> deviceNames = new ArrayList<>();
-
-                    for (BluetoothDevice device : btList) {
-                        deviceNames.add(device.getName());
-                    }
-
-                    builder.setItems(deviceNames.toArray(new CharSequence[0]),new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            selectedDeviceName = (String) deviceNames.get(which);
-                            startConnection();
-                            ((MenuItem)menu.findItem(R.id.action_connect)).setTitle("Disconnect");
-                        }
-                    });
-
-
-                    builder.create().show();
+                    deviceChooser.showChooser();
 
                 }else{
                     try {
@@ -156,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
         }else {
             outState.putBoolean("wasConnected", false);
         }
-        outState.putString("btDeviceName", selectedDeviceName);
+        //outState.putString("btDeviceName", selectedDeviceName);
     }
 
     @Override
@@ -201,23 +193,16 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
         }
     }
 
+    //TODO Przenieść do serwisu
     void startConnection(){
         BluetoothAdapter bt = BluetoothAdapter.getDefaultAdapter();
         bt.cancelDiscovery();
 
-        //TODO Terrible hack
-        Set<BluetoothDevice> btList = bt.getBondedDevices();
-
-        for (BluetoothDevice device : btList){
-            if (device.getName().equals(selectedDeviceName)){//"HC-05")){
-                btLedControl = new LedControler(device);
-                try {
-                    btLedControl.connect();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                break;
-            }
+        btLedControl = new LedControler(btDevice);
+        try {
+            btLedControl.connect();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
