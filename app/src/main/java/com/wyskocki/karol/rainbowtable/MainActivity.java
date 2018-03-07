@@ -1,11 +1,13 @@
 package com.wyskocki.karol.rainbowtable;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.DialogInterface;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.IBinder;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -23,7 +25,6 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class MainActivity extends AppCompatActivity implements OnFragmentColorSelected {
 
@@ -40,16 +41,36 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager viewPager;
-    private LedControler btLedControl;
+
+
+
+    //private LedControler btLedControl;
+    private BluetoothDevice btDevice;
+    private LedControllerService ledService;
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        public void onServiceDisconnected(ComponentName name) {
+            ledService = null;
+        }
+
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            LedControllerService.LedControllerBinder binder = (LedControllerService.LedControllerBinder)service;
+            ledService = binder.getService();
+        }
+    };
+
+
     private Menu menu;
 
-    private String selectedDeviceName = null;
+    private DeviceChooser deviceChooser;
 
+
+    //Intents ID
     private final int REQUEST_ENABLE_BT = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -63,31 +84,43 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
         tabLayout.setupWithViewPager(viewPager);
         //setupTabIcons(tabLayout);
 
-        if(savedInstanceState != null) {
-            Log.i("savedInstanceState: ", "exist");
-            if (savedInstanceState.getBoolean("wasConnected", false)) {
-                Log.i("savedInstanceState", "was connected");
-                selectedDeviceName = savedInstanceState.getString("btDeviceName", null);
-                if (selectedDeviceName != null) {
-                    Log.i("savedInstanceState", "start connection");
-                    startConnection();
-                    //((MenuItem) menu.findItem(R.id.action_connect)).setTitle("Disconnect");
-                }
+        deviceChooser = new DeviceChooser(this);
+        deviceChooser.addListener(new DeviceChooser.OnSelectListener(){
+            @Override
+            public void onSelect(BluetoothDevice device) {
+                btDevice = device;
+                startConnection();
+                ((MenuItem)menu.findItem(R.id.action_connect)).setTitle("Disconnect");
             }
-        }
+        });
     }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        bindWithService();
+    }
+
+    private void bindWithService(){
+        writeToLog("bind to the service");
+        Intent serviceIntent = new Intent(this, LedControllerService.class);
+        startService(serviceIntent);
+        bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+    }
+
 
     private void setupTabIcons(TabLayout tabLayout) {
         //tabLayout.getTabAt(0).setIcon(R.drawable.ic_adjust_white_24dp);
         //tabLayout.getTabAt(1).setIcon(R.drawable.ic_palette_white_24dp);
         //tabLayout.getTabAt(2).setIcon(R.drawable.ic_play_circle_outline_white_24dp);
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu, menu);
         this.menu = menu;
-        if(btLedControl != null && btLedControl.isConnected())
+        if(ledService != null && ledService.isConnected())
             menu.findItem(R.id.action_connect).setTitle("Disconnect");
         return true;
     }
@@ -99,45 +132,28 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_connect) {
             BluetoothAdapter bt = BluetoothAdapter.getDefaultAdapter();
-            if (!bt.isEnabled()){
-                Intent enableBT = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableBT, REQUEST_ENABLE_BT);
-            }else{
-                if (btLedControl == null || !btLedControl.isConnected()) {
+            if (bt == null){
+                Toast.makeText(getBaseContext(), "Bluetooth aren't supported!", Toast.LENGTH_LONG).show();
+                finish();
+            }else {
+                if (!bt.isEnabled()){
+                    Intent enableBT = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                    startActivityForResult(enableBT, REQUEST_ENABLE_BT);
+                }else {
+                    if (ledService == null || !ledService.isConnected()) {
 
+                        deviceChooser.showChooser();
 
-                    Set<BluetoothDevice> btList = BluetoothAdapter.getDefaultAdapter().getBondedDevices();
-
-
-
-                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                    builder.setTitle("Choose device");
-                    final ArrayList<CharSequence> deviceNames = new ArrayList<>();
-
-                    for (BluetoothDevice device : btList) {
-                        deviceNames.add(device.getName());
-                    }
-
-                    builder.setItems(deviceNames.toArray(new CharSequence[0]),new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            selectedDeviceName = (String) deviceNames.get(which);
-                            startConnection();
-                            ((MenuItem)menu.findItem(R.id.action_connect)).setTitle("Disconnect");
+                    } else {
+                        try {
+                            writeToLog("Disconnect");
+                            ledService.close();
+                            ((MenuItem) menu.findItem(R.id.action_connect)).setTitle("Connect");
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
-                    });
-
-
-                    builder.create().show();
-
-                }else{
-                    try {
-                        btLedControl.close();
-                        ((MenuItem)menu.findItem(R.id.action_connect)).setTitle("Connect");
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
                 }
             }
@@ -150,27 +166,13 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-
-        if (btLedControl != null) {
-            outState.putBoolean("wasConnected", btLedControl.isConnected());
-        }else {
-            outState.putBoolean("wasConnected", false);
-        }
-        outState.putString("btDeviceName", selectedDeviceName);
     }
 
     @Override
     protected void onDestroy() {
-        if(btLedControl != null){
-            try {
-                btLedControl.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
         super.onDestroy();
+        unbindService(serviceConnection);
     }
-
 
 
     private void setupViewPager(ViewPager viewPager) {
@@ -181,15 +183,18 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
         viewPager.setAdapter(adapter);
     }
 
+
     @Override
     public void colorSelected(int color) {
-        if(btLedControl != null && btLedControl.isConnected())
+        if(ledService != null && ledService.isConnected()) {
+            writeToLog("set Color");
             try {
-                btLedControl.sendColor(color);
+                ledService.setColor(color);
             } catch (IOException e) {
                 e.printStackTrace();
                 Toast.makeText(getBaseContext(), "Connection problem!", Toast.LENGTH_LONG).show();
             }
+        }
     }
 
     @Override
@@ -197,27 +202,20 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
         super.onActivityResult(requestCode, resultCode, data);
 
         if(requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_OK){
-            startConnection();
+            Toast.makeText(getBaseContext(), "Bluetooth enabled!", Toast.LENGTH_LONG).show();
+        }
+        if (requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_CANCELED){
+            Toast.makeText(getBaseContext(), "Bluetooth can't be enabled!", Toast.LENGTH_LONG).show();
         }
     }
 
     void startConnection(){
-        BluetoothAdapter bt = BluetoothAdapter.getDefaultAdapter();
-        bt.cancelDiscovery();
-
-        //TODO Terrible hack
-        Set<BluetoothDevice> btList = bt.getBondedDevices();
-
-        for (BluetoothDevice device : btList){
-            if (device.getName().equals(selectedDeviceName)){//"HC-05")){
-                btLedControl = new LedControler(device);
-                try {
-                    btLedControl.connect();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                break;
-            }
+        writeToLog("connect");
+        try {
+            ledService.connect(btDevice);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(getBaseContext(), "Error while connecting!", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -252,5 +250,10 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
             fragmentList.add(fragment);
             fragmentTitleList.add(title);
         }
+    }
+
+
+    private void writeToLog(String message){
+        Log.d(MainActivity.class.getName(), message);
     }
 }
