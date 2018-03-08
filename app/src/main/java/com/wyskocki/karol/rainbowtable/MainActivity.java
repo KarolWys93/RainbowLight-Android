@@ -43,18 +43,32 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
     private ViewPager viewPager;
 
 
-
-    //private LedControler btLedControl;
     private BluetoothDevice btDevice;
     private LedControllerService ledService;
     private ServiceConnection serviceConnection = new ServiceConnection() {
         public void onServiceDisconnected(ComponentName name) {
+            ledService.removeConnectionListener();
             ledService = null;
         }
 
         public void onServiceConnected(ComponentName name, IBinder service) {
             LedControllerService.LedControllerBinder binder = (LedControllerService.LedControllerBinder)service;
             ledService = binder.getService();
+            ledService.addConnectionListener(connectionListener);
+        }
+    };
+    private LedControllerService.ConnectionListener connectionListener = new LedControllerService.ConnectionListener() {
+        @Override
+        public void onConnect(boolean success) {
+            if(success){
+                Toast.makeText(getBaseContext(), "Connected!", Toast.LENGTH_LONG).show();
+                ((MenuItem)menu.findItem(R.id.action_connect)).setTitle("Disconnect");
+                ((MenuItem)menu.findItem(R.id.action_connect)).setEnabled(true);
+            }else {
+                Toast.makeText(getBaseContext(), "Error while connecting!", Toast.LENGTH_LONG).show();
+                ((MenuItem)menu.findItem(R.id.action_connect)).setTitle("Connect");
+                ((MenuItem)menu.findItem(R.id.action_connect)).setEnabled(true);
+            }
         }
     };
 
@@ -90,7 +104,8 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
             public void onSelect(BluetoothDevice device) {
                 btDevice = device;
                 startConnection();
-                ((MenuItem)menu.findItem(R.id.action_connect)).setTitle("Disconnect");
+                ((MenuItem)menu.findItem(R.id.action_connect)).setTitle("Connecting...");
+                ((MenuItem)menu.findItem(R.id.action_connect)).setEnabled(false);
             }
         });
     }

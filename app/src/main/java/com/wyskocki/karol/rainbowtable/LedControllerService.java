@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
@@ -31,6 +32,8 @@ public class LedControllerService extends Service {
     private BluetoothDevice device;
     private BluetoothSocket socket;
     private OutputStream outStream;
+
+    private ConnectionListener listener;
 
 
 
@@ -77,23 +80,8 @@ public class LedControllerService extends Service {
         writeToLog("Start connecting");
 
         socket = device.createRfcommSocketToServiceRecord(PRIVATE_UUID);
+        new ConnectTask().execute(socket);
 
-        //TODO move this to worker thread
-        Thread connectionThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    socket.connect();
-                } catch (IOException e) {
-                    try {
-                        socket.close();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-            }
-        });
-        connectionThread.start();
         outStream = socket.getOutputStream();
     }
 
@@ -139,8 +127,45 @@ public class LedControllerService extends Service {
         }
     }
 
+    public void addConnectionListener(ConnectionListener listener){
+        this.listener = listener;
+    }
+
+    public void removeConnectionListener(){
+        this.listener = null;
+    }
 
     private final IBinder binder = new LedControllerBinder();
+
+
+    private class ConnectTask extends AsyncTask<BluetoothSocket, Void, Boolean>{
+
+        @Override
+        protected Boolean doInBackground(BluetoothSocket... bluetoothSockets) {
+            try {
+                bluetoothSockets[0].connect();
+
+            } catch (IOException e) {
+                try {
+                    bluetoothSockets[0].close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+            return bluetoothSockets[0].isConnected();
+        }
+
+        @Override
+        protected void onPostExecute(Boolean bool) {
+            super.onPostExecute(bool);
+            writeToLog("Connected successfully: "+bool);
+            listener.onConnect(bool);
+        }
+    }
+
+    interface ConnectionListener{
+        void onConnect(boolean success);
+    }
 
     public class LedControllerBinder extends Binder {
         LedControllerService getService() {
@@ -152,7 +177,6 @@ public class LedControllerService extends Service {
     public IBinder onBind(Intent intent) {
         return binder;
     }
-
 
     private void writeToLog(String message){
         Log.d(LedControllerService.class.getName(), message);

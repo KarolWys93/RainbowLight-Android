@@ -182,8 +182,9 @@ public class RoundColorFragment extends Fragment {
                 @Override
                 public void onSensorChanged(SensorEvent event) {
                     float max = 40;
-                    float value = 1/max * event.values[0];
-                    value = (float)lightSensorFilter.filter(Math.min(value, 1.0f));
+                    float value = 1/max * event.values[0] + 0.01f;
+                    //value = (float)lightSensorFilter.filter(Math.min(value, 1.0f));
+                    value = Math.min(value, 1.0f);
                     Log.i("Light value", " "+value);
                     valueBar.setValue(value);
                     if(fragmentIsVisible) {
