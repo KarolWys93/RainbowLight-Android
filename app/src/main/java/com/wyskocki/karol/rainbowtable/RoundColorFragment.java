@@ -3,6 +3,7 @@ package com.wyskocki.karol.rainbowtable;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -131,6 +132,8 @@ public class RoundColorFragment extends Fragment {
 
         }
 
+        loadPreferences();
+
         if(savedInstanceState != null){
             setLightSensorEnable(savedInstanceState.getBoolean("autoValue", false));
         }
@@ -238,11 +241,22 @@ public class RoundColorFragment extends Fragment {
         mListener = null;
     }
 
-
-
     @Override
     public void onDestroy() {
         setLightSensorEnable(false);
+        savePreferences();
         super.onDestroy();
+    }
+
+    private void loadPreferences(){
+        SharedPreferences preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+        colorPicker.setColor(preferences.getInt("recent_color", Color.RED));
+    }
+
+    private void savePreferences(){
+        SharedPreferences preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt("recent_color", colorPicker.getColor());
+        editor.commit();
     }
 }

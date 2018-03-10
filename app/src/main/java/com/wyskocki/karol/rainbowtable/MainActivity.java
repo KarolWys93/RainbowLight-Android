@@ -104,8 +104,8 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
             public void onSelect(BluetoothDevice device) {
                 btDevice = device;
                 startConnection();
-                ((MenuItem)menu.findItem(R.id.action_connect)).setTitle("Connecting...");
-                ((MenuItem)menu.findItem(R.id.action_connect)).setEnabled(false);
+                menu.findItem(R.id.action_connect).setTitle("Connecting...");
+                menu.findItem(R.id.action_connect).setEnabled(false);
             }
         });
     }
