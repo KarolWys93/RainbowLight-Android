@@ -22,26 +22,24 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.wyskocki.karol.rainbowtable.ledcontroller.LedControllerService;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements OnFragmentColorSelected {
 
-    /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
-     */
+    //UI fields
 
     /**
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager viewPager;
+    private Menu menu;
+    private DeviceChooser deviceChooser;
 
+    //fields
 
     private BluetoothDevice btDevice;
     private LedControllerService ledService;
@@ -54,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
         public void onServiceConnected(ComponentName name, IBinder service) {
             LedControllerService.LedControllerBinder binder = (LedControllerService.LedControllerBinder)service;
             ledService = binder.getService();
-            ledService.addConnectionListener(connectionListener);
+            ledService.setConnectionListener(connectionListener);
         }
     };
     private LedControllerService.ConnectionListener connectionListener = new LedControllerService.ConnectionListener() {
@@ -72,14 +70,12 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
         }
     };
 
-
-    private Menu menu;
-
-    private DeviceChooser deviceChooser;
-
-
     //Intents ID
+
     private final int REQUEST_ENABLE_BT = 1;
+
+
+    //Override methods
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,20 +110,6 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
     protected void onStart() {
         super.onStart();
         bindWithService();
-    }
-
-    private void bindWithService(){
-        writeToLog("bind to the service");
-        Intent serviceIntent = new Intent(this, LedControllerService.class);
-        startService(serviceIntent);
-        bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
-    }
-
-
-    private void setupTabIcons(TabLayout tabLayout) {
-        //tabLayout.getTabAt(0).setIcon(R.drawable.ic_adjust_white_24dp);
-        //tabLayout.getTabAt(1).setIcon(R.drawable.ic_palette_white_24dp);
-        //tabLayout.getTabAt(2).setIcon(R.drawable.ic_play_circle_outline_white_24dp);
     }
 
     @Override
@@ -177,39 +159,10 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
         return super.onOptionsItemSelected(item);
     }
 
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-    }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
         unbindService(serviceConnection);
-    }
-
-
-    private void setupViewPager(ViewPager viewPager) {
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(RoundColorFragment.newInstance(), "Color ring");
-        adapter.addFragment(PaletteFragment.newInstance(), "Palette");
-        //adapter.addFragment(RoundColorFragment.newInstance(), "Animation");
-        viewPager.setAdapter(adapter);
-    }
-
-
-    @Override
-    public void colorSelected(int color) {
-        if(ledService != null && ledService.isConnected()) {
-            writeToLog("set Color");
-            try {
-                ledService.setColor(color);
-            } catch (IOException e) {
-                e.printStackTrace();
-                Toast.makeText(getBaseContext(), "Connection problem!", Toast.LENGTH_LONG).show();
-            }
-        }
     }
 
     @Override
@@ -224,7 +177,51 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
         }
     }
 
-    void startConnection(){
+    @Override
+    public void colorSelected(int color) {
+        if(ledService != null && ledService.isConnected()) {
+            writeToLog("set Color");
+            try {
+                ledService.setColor(color);
+            } catch (IOException e) {
+                e.printStackTrace();
+                Toast.makeText(getBaseContext(), "Connection problem!", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+
+    //private methods
+
+    /**
+     * This method connects MainActivity object with {@link LedControllerService}.
+     * When service don't exist, it will be created.
+     */
+    private void bindWithService(){
+        writeToLog("bind to the service");
+        Intent serviceIntent = new Intent(this, LedControllerService.class);
+        startService(serviceIntent);
+        bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    private void setupTabIcons(TabLayout tabLayout) {
+        //tabLayout.getTabAt(0).setIcon(R.drawable.ic_adjust_white_24dp);
+        //tabLayout.getTabAt(1).setIcon(R.drawable.ic_palette_white_24dp);
+        //tabLayout.getTabAt(2).setIcon(R.drawable.ic_play_circle_outline_white_24dp);
+    }
+
+    private void setupViewPager(ViewPager viewPager) {
+        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+        adapter.addFragment(RoundColorFragment.newInstance(), "Color ring");
+        adapter.addFragment(PaletteFragment.newInstance(), "Palette");
+        //adapter.addFragment(RoundColorFragment.newInstance(), "Animation");
+        viewPager.setAdapter(adapter);
+    }
+
+    /**
+     * Starting connection with device
+     */
+    private void startConnection(){
         writeToLog("connect");
         try {
             ledService.connect(btDevice);
@@ -234,6 +231,12 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
         }
     }
 
+    private void writeToLog(String message){
+        Log.d(MainActivity.class.getName(), message);
+    }
+
+
+    //Inner class
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
@@ -268,7 +271,4 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
     }
 
 
-    private void writeToLog(String message){
-        Log.d(MainActivity.class.getName(), message);
-    }
 }

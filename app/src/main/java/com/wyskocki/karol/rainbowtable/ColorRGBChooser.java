@@ -3,32 +3,40 @@ package com.wyskocki.karol.rainbowtable;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.SeekBar;
 
 /**
+ * ColorRGBChooser class shows dialog window.
+ * This color selector contains three sliders that represent
+ * one of the three primary colors: red, green and blue.
+ * Using this sliders, user can select any color.
+ * <br/><br/>
  * Created by karol on 10.03.18.
  */
 
 public class ColorRGBChooser {
 
+    //fields
+
     private int color = Color.RED;
     private String title;
     private AlertDialog dialog;
     private final View dialogView;
-
-
     private ChangeListener listener;
 
-    interface ChangeListener{
-        void onChange(int color);
-    }
+    //Constructors
 
-
+    /**
+     * ColorRGBChooser constructor.
+     * @param activity activity that creates dialog
+     * @param title title of dialog window
+     */
     public ColorRGBChooser(final Activity activity, String title){
         this.title = title;
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
@@ -55,10 +63,35 @@ public class ColorRGBChooser {
         dialog = builder.create();
     }
 
+    //interfaces
+
+    /**
+     * Interface used to allow color chooser dialog to run some code when color was selected.
+     */
+    public interface ChangeListener{
+
+        /**
+         * This method will be invoked when the "OK" button in the dialog is clicked..
+         * @param color selected color
+         */
+        void onChange(int color);
+    }
+
+    //public methods
+
+    /**
+     * This method shows dialog window. Sliders use parameters of last selected color.
+     * If it is first call of method, red will be used as parameter for sliders.
+     */
     public void show(){
         show(color);
     }
 
+    /**
+     * This method shows dialog window. Sliders positions will be set using color
+     * passed as parameter.
+     * @param color color used to set sliders position.
+     */
     public void show(int color){
         this.color = color;
         ((SeekBar)dialogView.findViewById(R.id.redBar)).setProgress(Color.red(color));
@@ -67,12 +100,27 @@ public class ColorRGBChooser {
         dialog.show();
     }
 
+    /**
+     * Return selected color. If no one was selected, return red.
+     * @return
+     */
+    @NonNull
+    public int getColor(){
+        return color;
+    }
 
-    void setListener(ChangeListener listener){
+    /**
+     * Sets a listener to be invoked when new color will be chosen
+     * @param listener
+     */
+    public void setListener(ChangeListener listener){
         this.listener = listener;
     }
 
-    void removeListener(){
+    /**
+     * Remove listener
+     */
+    public void removeListener(){
         this.listener = null;
     }
 

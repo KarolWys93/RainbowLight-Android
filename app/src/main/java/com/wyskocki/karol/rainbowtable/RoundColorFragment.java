@@ -2,7 +2,6 @@ package com.wyskocki.karol.rainbowtable;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.hardware.Sensor;
@@ -11,27 +10,23 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageButton;
-import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.larswerkman.holocolorpicker.ColorPicker;
 import com.larswerkman.holocolorpicker.SaturationBar;
 import com.larswerkman.holocolorpicker.ValueBar;
-import com.wyskocki.karol.dsp.DigitalFilter;
-import com.wyskocki.karol.dsp.MeanFilter;
 
 import java.util.List;
 
 
 /**
- * A simple {@link Fragment} subclass.
+ * RoundColorFragment is {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
  * {@link OnFragmentColorSelected} interface
  * to handle interaction events.
@@ -40,21 +35,25 @@ import java.util.List;
  */
 public class RoundColorFragment extends Fragment {
 
+    //fields
+
     private ColorPicker colorPicker;
     private SaturationBar saturationBar;
     private ValueBar valueBar;
 
     private Sensor lightSensor;
     private SensorEventListener sensorListener;
-    private DigitalFilter lightSensorFilter;
     private boolean fragmentIsVisible = false;
 
     private OnFragmentColorSelected mListener;
     private ColorRGBChooser colorRGBChooser;
 
-    public RoundColorFragment() {
-        // Required empty public constructor
-    }
+
+    //constructors
+
+    public RoundColorFragment() {}
+
+    //Factory methods
 
     /**
      * Use this factory method to create a new instance of
@@ -66,6 +65,8 @@ public class RoundColorFragment extends Fragment {
         RoundColorFragment fragment = new RoundColorFragment();
         return fragment;
     }
+
+    //Override methods
 
     @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup container,
@@ -153,58 +154,6 @@ public class RoundColorFragment extends Fragment {
         return view;
     }
 
-    private void rgbColorDialog(){
-        colorRGBChooser.show(colorPicker.getColor());
-    }
-
-
-    private Sensor getLightSensor(){
-        Activity activity = getActivity();
-        SensorManager sensorManager = (SensorManager) activity.getSystemService( Context.SENSOR_SERVICE );
-        List<Sensor> sensors = sensorManager.getSensorList(Sensor.TYPE_LIGHT);
-        if(sensors.isEmpty()){
-            return null;
-        }
-        return sensors.get(0);
-    }
-
-    private void setLightSensorEnable(Boolean enable){
-        Activity activity = getActivity();
-        SensorManager sensorManager = (SensorManager) activity.getSystemService( Context.SENSOR_SERVICE );
-
-        if(enable){
-            lightSensorFilter = new MeanFilter(16);
-            sensorListener = new SensorEventListener() {
-                @Override
-                public void onSensorChanged(SensorEvent event) {
-                    float max = 40;
-                    float value = 1/max * event.values[0] + 0.01f;
-                    //value = (float)lightSensorFilter.filter(Math.min(value, 1.0f));
-                    value = Math.min(value, 1.0f);
-                    Log.i("Light value", " "+value);
-                    valueBar.setValue(value);
-                    if(fragmentIsVisible) {
-                        colorSelected(colorPicker.getColor());
-                    }
-                }
-                @Override
-                public void onAccuracyChanged(Sensor sensor, int accuracy) {}
-            };
-
-            sensorManager.registerListener(sensorListener, lightSensor, SensorManager.SENSOR_DELAY_GAME);//SensorManager.SENSOR_DELAY_UI);
-            Toast.makeText(getContext(), "Auto value mode enabled", Toast.LENGTH_SHORT).show();
-        }else {
-            if (sensorListener != null)
-                sensorManager.unregisterListener(sensorListener);
-        }
-    }
-
-    public void colorSelected(int color) {
-        if (mListener != null) {
-            mListener.colorSelected(color);
-        }
-    }
-
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -239,6 +188,68 @@ public class RoundColorFragment extends Fragment {
         setLightSensorEnable(false);
         savePreferences();
         super.onDestroy();
+    }
+
+    //private methods
+
+    /**
+     * Show dialog with rgb color chooser
+     */
+    private void rgbColorDialog(){
+        colorRGBChooser.show(colorPicker.getColor());
+    }
+
+    /**
+     * Return light sensor. Sensor is used to automated color value.
+     * @return light sensor
+     */
+    private Sensor getLightSensor(){
+        Activity activity = getActivity();
+        SensorManager sensorManager = (SensorManager) activity.getSystemService( Context.SENSOR_SERVICE );
+        List<Sensor> sensors = sensorManager.getSensorList(Sensor.TYPE_LIGHT);
+        if(sensors.isEmpty()){
+            return null;
+        }
+        return sensors.get(0);
+    }
+
+    /**
+     * Set enable auto value mode.
+     * @param enable
+     */
+    private void setLightSensorEnable(Boolean enable){
+        Activity activity = getActivity();
+        SensorManager sensorManager = (SensorManager) activity.getSystemService( Context.SENSOR_SERVICE );
+
+        if(enable){
+            sensorListener = new SensorEventListener() {
+                @Override
+                public void onSensorChanged(SensorEvent event) {
+                    float max = 40;
+                    float value = 1/max * event.values[0] + 0.01f;
+                    value = Math.min(value, 1.0f);
+                    Log.i("Light value", " "+value);
+                    valueBar.setValue(value);
+                    if(fragmentIsVisible) {
+                        colorSelected(colorPicker.getColor());
+                    }
+                }
+                @Override
+                public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+            };
+
+            sensorManager.registerListener(sensorListener, lightSensor, SensorManager.SENSOR_DELAY_GAME);//SensorManager.SENSOR_DELAY_UI);
+            Toast.makeText(getContext(), "Auto value mode enabled", Toast.LENGTH_SHORT).show();
+        }else {
+            if (sensorListener != null)
+                sensorManager.unregisterListener(sensorListener);
+        }
+    }
+
+    public void colorSelected(int color) {
+        if (mListener != null) {
+            mListener.colorSelected(color);
+        }
     }
 
     private void loadPreferences(){

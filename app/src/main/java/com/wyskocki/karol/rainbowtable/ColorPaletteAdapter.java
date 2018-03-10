@@ -21,14 +21,20 @@ import java.util.ArrayList;
 
 public class ColorPaletteAdapter extends BaseAdapter {
 
+    //fields
+
     private Context mContext;
     private ArrayList colors;
     private int selectedPos = -1;
+
+    //Constuctors
 
     public ColorPaletteAdapter(Context c, ArrayList<Integer> colors) {
         mContext = c;
         this.colors = colors;
     }
+
+    //Override methods
 
     @Override
     public int getCount() {
@@ -76,6 +82,8 @@ public class ColorPaletteAdapter extends BaseAdapter {
         return imageView;
     }
 
+    //public methods
+
     public void setSelectedPos(int pos){
         selectedPos = pos;
     }
@@ -91,7 +99,9 @@ public class ColorPaletteAdapter extends BaseAdapter {
         return (int) colors.get(selectedPos);
     }
 
-    int size_dp(int size){
+    //private methods
+
+    private int size_dp(int size){
         Resources res = mContext.getResources();
         return (int)(size*res.getDisplayMetrics().density);
     }

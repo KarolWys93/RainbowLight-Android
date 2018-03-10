@@ -1,4 +1,4 @@
-package com.wyskocki.karol.rainbowtable;
+package com.wyskocki.karol.rainbowtable.ledcontroller;
 
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
@@ -24,32 +24,66 @@ public class LedControllerService extends Service {
     private final boolean testMode = false;
 
     //instruction
+
     private final int SEND_COLOR = 1;
     private final int SEND_RAINBOW = 82;
 
+
     private static UUID PRIVATE_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+    //fields
 
     private BluetoothDevice device;
     private BluetoothSocket socket;
     private OutputStream outStream;
-
     private ConnectionListener listener;
+    private final IBinder binder = new LedControllerBinder();
+
+    //Override methods
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        writeToLog("Service created");
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        writeToLog("Service start command");
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        try {
+            close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return binder;
+    }
 
 
+    //public methods
+
+    public void setConnectionListener(ConnectionListener listener){
+        this.listener = listener;
+    }
+
+    public void removeConnectionListener(){
+        this.listener = null;
+    }
 
     public void setColor(int color) throws IOException {
         byte red = (byte) Color.red(color);
         byte green = (byte) Color.green(color);
         byte blue = (byte) Color.blue(color);
-        if(testMode){
-            send(String.format("<%d %d %d %d> ",
-                    SEND_COLOR,
-                    Color.red(color),
-                    Color.green(color),
-                    Color.blue(color)).getBytes());
-        }else {
-            send(new byte[]{SEND_COLOR, red, green, blue});
-        }
+        send(new byte[]{SEND_COLOR, red, green, blue});
     }
 
     public void sendAnimation(int speed, int amplitude) throws IOException {
@@ -57,14 +91,6 @@ public class LedControllerService extends Service {
             send(String.format("%d %d %d", SEND_RAINBOW, speed, amplitude).getBytes());
         }else {
             send(new byte[]{SEND_RAINBOW, (byte) speed, (byte) amplitude});
-        }
-    }
-
-
-    private void send(byte[] frame) throws IOException {
-        if(isConnected()){
-            outStream.write(frame);
-            outStream.flush();
         }
     }
 
@@ -105,38 +131,28 @@ public class LedControllerService extends Service {
             socket.close();
     }
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        writeToLog("Service created");
+    //interfaces
+
+    public interface ConnectionListener{
+        void onConnect(boolean success);
     }
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        writeToLog("Service start command");
-        return super.onStartCommand(intent, flags, startId);
-    }
+    //inner class
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        try {
-            close();
-        } catch (IOException e) {
-            e.printStackTrace();
+    public class LedControllerBinder extends Binder {
+        public LedControllerService getService() {
+            return LedControllerService.this;
         }
     }
 
-    public void addConnectionListener(ConnectionListener listener){
-        this.listener = listener;
+    //private methods
+
+    private void send(byte[] frame) throws IOException {
+        if(isConnected()){
+            outStream.write(frame);
+            outStream.flush();
+        }
     }
-
-    public void removeConnectionListener(){
-        this.listener = null;
-    }
-
-    private final IBinder binder = new LedControllerBinder();
-
 
     private class ConnectTask extends AsyncTask<BluetoothSocket, Void, Boolean>{
 
@@ -161,21 +177,6 @@ public class LedControllerService extends Service {
             writeToLog("Connected successfully: "+bool);
             listener.onConnect(bool);
         }
-    }
-
-    interface ConnectionListener{
-        void onConnect(boolean success);
-    }
-
-    public class LedControllerBinder extends Binder {
-        LedControllerService getService() {
-            return LedControllerService.this;
-        }
-    }
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        return binder;
     }
 
     private void writeToLog(String message){

@@ -14,7 +14,7 @@ import java.util.ArrayList;
 
 
 /**
- * A simple {@link Fragment} subclass.
+ * PaletteFragment is {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
  * {@link OnFragmentColorSelected} interface
  * to handle interaction events.
@@ -23,12 +23,17 @@ import java.util.ArrayList;
  */
 public class PaletteFragment extends Fragment {
 
+    //fields
+
     private OnFragmentColorSelected mListener;
     private ColorPaletteAdapter paletteAdapter;
-    GridView gridview;
+    private GridView gridview;
 
-    public PaletteFragment() {
-    }
+    //constuctors
+
+    public PaletteFragment() {}
+
+    //Factory methods
 
     /**
      * Use this factory method to create a new instance of
@@ -40,18 +45,22 @@ public class PaletteFragment extends Fragment {
         return fragment;
     }
 
+    //Override methods
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_palette, container, false);
 
         gridview = (GridView) view.findViewById(R.id.paletteView);
         paletteAdapter = new ColorPaletteAdapter(getContext(), HSVColors());
+
         if(savedInstanceState != null) {
             paletteAdapter.setSelectedPos(savedInstanceState.getInt("SelectedColorPos", -1));
         }
+
         gridview.setAdapter(paletteAdapter);
 
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -62,7 +71,6 @@ public class PaletteFragment extends Fragment {
             }
         });
 
-
         return view;
     }
 
@@ -70,13 +78,6 @@ public class PaletteFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt("SelectedColorPos", paletteAdapter.getSelectedPos());
-    }
-
-
-    public void onColorSelected(int color) {
-        if (mListener != null) {
-            mListener.colorSelected(color);
-        }
     }
 
     @Override
@@ -96,8 +97,19 @@ public class PaletteFragment extends Fragment {
         mListener = null;
     }
 
-    // Custom method to generate hsv colors list
-    public ArrayList HSVColors(){
+    //Private methods
+
+    private void onColorSelected(int color) {
+        if (mListener != null) {
+            mListener.colorSelected(color);
+        }
+    }
+
+    /**
+     * Custom method to generate hsv colors list
+     * @return list of colors
+     */
+    private ArrayList HSVColors(){
         ArrayList<Integer> colors= new ArrayList<>();
 
         // Loop through hue channel, saturation and light full
@@ -127,8 +139,14 @@ public class PaletteFragment extends Fragment {
         return colors;
     }
 
-    // Create HSV color from values
-    public int HSVColor(float hue, float saturation, float black){
+    /**
+     * Create HSV color from values
+     * @param hue
+     * @param saturation
+     * @param black
+     * @return color
+     */
+    private int HSVColor(float hue, float saturation, float black){
         /*
             Hue is the variation of color
             Hue range 0 to 360

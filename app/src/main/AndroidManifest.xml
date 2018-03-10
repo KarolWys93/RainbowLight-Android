@@ -21,7 +21,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name=".LedControllerService" android:exported="false" android:stopWithTask="true"/>
+        <service android:name=".ledcontroller.LedControllerService" android:exported="false" android:stopWithTask="true"/>
     </application>
 
 </manifest>
