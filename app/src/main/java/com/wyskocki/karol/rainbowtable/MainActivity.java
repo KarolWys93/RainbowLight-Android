@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
         tabLayout.setupWithViewPager(viewPager);
         //setupTabIcons(tabLayout);
 
-        deviceChooser = new DeviceChooser(this);
+        deviceChooser = new DeviceChooser(this, "Choose device");
         deviceChooser.addListener(new DeviceChooser.OnSelectListener(){
             @Override
             public void onSelect(BluetoothDevice device) {

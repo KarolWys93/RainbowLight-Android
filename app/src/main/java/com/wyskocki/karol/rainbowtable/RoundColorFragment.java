@@ -40,9 +40,9 @@ import java.util.List;
  */
 public class RoundColorFragment extends Fragment {
 
-    ColorPicker colorPicker;
-    SaturationBar saturationBar;
-    ValueBar valueBar;
+    private ColorPicker colorPicker;
+    private SaturationBar saturationBar;
+    private ValueBar valueBar;
 
     private Sensor lightSensor;
     private SensorEventListener sensorListener;
@@ -50,6 +50,7 @@ public class RoundColorFragment extends Fragment {
     private boolean fragmentIsVisible = false;
 
     private OnFragmentColorSelected mListener;
+    private ColorRGBChooser colorRGBChooser;
 
     public RoundColorFragment() {
         // Required empty public constructor
@@ -132,6 +133,17 @@ public class RoundColorFragment extends Fragment {
 
         }
 
+
+        colorRGBChooser = new ColorRGBChooser(this.getActivity(), "Color");
+        colorRGBChooser.setListener(new ColorRGBChooser.ChangeListener() {
+            @Override
+            public void onChange(int color) {
+                colorPicker.setColor(color);
+                colorSelected(color);
+            }
+        });
+
+
         loadPreferences();
 
         if(savedInstanceState != null){
@@ -142,26 +154,7 @@ public class RoundColorFragment extends Fragment {
     }
 
     private void rgbColorDialog(){
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        LayoutInflater inflater = getActivity().getLayoutInflater();
-        final View dialogView = inflater.inflate(R.layout.dialog_rgb_color, null);
-        ((SeekBar)dialogView.findViewById(R.id.redBar)).setProgress(Color.red(colorPicker.getColor()));
-        ((SeekBar)dialogView.findViewById(R.id.greenBar)).setProgress(Color.green(colorPicker.getColor()));
-        ((SeekBar)dialogView.findViewById(R.id.blueBar)).setProgress(Color.blue(colorPicker.getColor()));
-        builder.setTitle("Color");
-        builder.setView(dialogView);
-        builder.setCancelable(true);
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                int r = ((SeekBar) dialogView.findViewById(R.id.redBar)).getProgress();
-                int g = ((SeekBar) dialogView.findViewById(R.id.greenBar)).getProgress();
-                int b = ((SeekBar) dialogView.findViewById(R.id.blueBar)).getProgress();
-                colorPicker.setColor(Color.argb(255, r,g,b));
-                colorSelected(Color.argb(255, r, g, b));
-            }
-        });
-        builder.create().show();
+        colorRGBChooser.show(colorPicker.getColor());
     }
 
 

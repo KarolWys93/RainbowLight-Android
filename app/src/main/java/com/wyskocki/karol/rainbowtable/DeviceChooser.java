@@ -1,5 +1,6 @@
 package com.wyskocki.karol.rainbowtable;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -16,26 +17,26 @@ import java.util.Set;
 
 public class DeviceChooser {
 
-    private Context context;
+    private Activity activity;
     private Set<BluetoothDevice> devicesList;
     private String title;
     private BluetoothDevice selectedDevice;
     private OnSelectListener listener;
 
 
-    public DeviceChooser(Context context, String title){
-        this.context = context;
+    public DeviceChooser(Activity activity, String title){
+        this.activity = activity;
         this.title = title;
     }
 
-    public DeviceChooser(Context context){
-        this(context, "Choose device");
+    public DeviceChooser(Activity activity){
+        this(activity, "Choose device");
     }
 
 
     public void showChooser(){
         devicesList = BluetoothAdapter.getDefaultAdapter().getBondedDevices();
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setTitle(title);
         final ArrayList<CharSequence> deviceNames = new ArrayList<>();
 
