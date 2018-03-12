@@ -156,6 +156,11 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
             }
         }
 
+        if (id == R.id.action_about){
+            Intent about = new Intent(this, AboutActivity.class);
+            startActivity(about);
+        }
+
         return super.onOptionsItemSelected(item);
     }
 
