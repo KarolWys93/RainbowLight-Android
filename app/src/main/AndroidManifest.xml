@@ -27,7 +27,8 @@
             android:exported="false"
             android:stopWithTask="true" />
 
-        <activity android:name=".AboutActivity"></activity>
+        <activity android:name=".AboutActivity" />
+
     </application>
 
 </manifest>

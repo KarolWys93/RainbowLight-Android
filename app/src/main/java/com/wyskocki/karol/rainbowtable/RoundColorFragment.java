@@ -157,7 +157,10 @@ public class RoundColorFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBoolean("autoValue", ((CheckBox)getActivity().findViewById(R.id.autoValueChBox)).isChecked());
+        CheckBox autoValueCB = (CheckBox) getActivity().findViewById(R.id.autoValueChBox);
+        if(autoValueCB != null) {
+            outState.putBoolean("autoValue", autoValueCB.isChecked());
+        }
     }
 
     @Override
@@ -260,7 +263,9 @@ public class RoundColorFragment extends Fragment {
     private void savePreferences(){
         SharedPreferences preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putInt("recent_color", colorPicker.getColor());
+        if(colorPicker != null) {
+            editor.putInt("recent_color", colorPicker.getColor());
+        }
         editor.commit();
     }
 }

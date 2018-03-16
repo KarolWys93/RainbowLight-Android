@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements OnFragmentColorSelected {
+public class MainActivity extends AppCompatActivity implements OnFragmentColorSelected, OnFragmentAnimationSelected {
 
     //UI fields
 
@@ -195,6 +195,19 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
         }
     }
 
+    @Override
+    public void animationSelected(int param1, int param2) {
+        if(ledService != null && ledService.isConnected()){
+            writeToLog("set Animation");
+            try{
+                ledService.setAnimation(param1, param2);
+            }catch (IOException e){
+                e.printStackTrace();
+                Toast.makeText(getBaseContext(), "Connection problem!", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
 
     //private methods
 
@@ -210,16 +223,16 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
     }
 
     private void setupTabIcons(TabLayout tabLayout) {
-        //tabLayout.getTabAt(0).setIcon(R.drawable.ic_adjust_white_24dp);
-        //tabLayout.getTabAt(1).setIcon(R.drawable.ic_palette_white_24dp);
-        //tabLayout.getTabAt(2).setIcon(R.drawable.ic_play_circle_outline_white_24dp);
+//        tabLayout.getTabAt(0).setIcon(R.drawable.ic_adjust_white_24dp);
+//        tabLayout.getTabAt(1).setIcon(R.drawable.ic_palette_white_24dp);
+//        tabLayout.getTabAt(2).setIcon(R.drawable.ic_play_circle_outline_white_24dp);
     }
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         adapter.addFragment(RoundColorFragment.newInstance(), "Color ring");
         adapter.addFragment(PaletteFragment.newInstance(), "Palette");
-        //adapter.addFragment(RoundColorFragment.newInstance(), "Animation");
+        adapter.addFragment(AnimationFragment.newInstance(), "Animation");
         viewPager.setAdapter(adapter);
     }
 
