@@ -86,7 +86,7 @@ public class LedControllerService extends Service {
         send(new byte[]{SEND_COLOR, red, green, blue});
     }
 
-    public void sendAnimation(int speed, int amplitude) throws IOException {
+    public void setAnimation(int speed, int amplitude) throws IOException {
         if(testMode){
             send(String.format("%d %d %d", SEND_RAINBOW, speed, amplitude).getBytes());
         }else {
