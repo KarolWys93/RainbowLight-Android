@@ -4,7 +4,7 @@ android {
     compileSdkVersion 26
     buildToolsVersion "26.0.2"
     defaultConfig {
-        applicationId "com.wyskocki.karol.rainbowtable"
+        applicationId "com.wyskocki.karol.rainbowlight"
         minSdkVersion 19
         targetSdkVersion 24
         versionCode 1

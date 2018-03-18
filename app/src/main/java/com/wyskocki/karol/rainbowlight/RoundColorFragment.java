@@ -1,4 +1,4 @@
-package com.wyskocki.karol.rainbowtable;
+package com.wyskocki.karol.rainbowlight;
 
 import android.app.Activity;
 import android.content.Context;

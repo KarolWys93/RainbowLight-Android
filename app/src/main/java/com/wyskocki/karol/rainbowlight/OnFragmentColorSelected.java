@@ -1,4 +1,4 @@
-package com.wyskocki.karol.rainbowtable;
+package com.wyskocki.karol.rainbowlight;
 
 /**
  * Interface used to allow fragments to notify activity, when color was chosen.

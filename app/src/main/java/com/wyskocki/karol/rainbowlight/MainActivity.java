@@ -1,4 +1,4 @@
-package com.wyskocki.karol.rainbowtable;
+package com.wyskocki.karol.rainbowlight;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -22,7 +22,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.wyskocki.karol.rainbowtable.ledcontroller.LedControllerService;
+import com.wyskocki.karol.rainbowlight.ledcontroller.LedControllerService;
 
 import java.io.IOException;
 import java.util.ArrayList;

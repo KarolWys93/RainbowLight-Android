@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">Rainbow Table</string>
+    <string name="app_name" translatable="false">RainbowLight</string>
 
     <string name="animation_1_description">Smooth color transitions</string>
     <string name="run_animation">Run</string>

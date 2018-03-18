@@ -27,5 +27,5 @@
     <string name="rgb_chooser_confirm_button">OK</string>
     <string name="auto_value_mode_enabled_notificaton">Tryb Auto włączony</string>
     <string name="no_bluetooth_notification">Urządzenie nie posiada łączności Bluetooth</string>
-    <string name="color_ring_tab_name">Koło koloru</string>
+    <string name="color_ring_tab_name">Koło barw</string>
 </resources>

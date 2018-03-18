@@ -30,7 +30,7 @@ import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import com.wyskocki.karol.rainbowtable.R;
+import com.wyskocki.karol.rainbowlight.R;
 
 public class SVBar extends View {
 

@@ -1,4 +1,4 @@
-package com.wyskocki.karol.rainbowtable.ledcontroller;
+package com.wyskocki.karol.rainbowlight.ledcontroller;
 
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
