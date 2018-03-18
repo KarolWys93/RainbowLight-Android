@@ -8,7 +8,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Red" />
+        android:text="@string/red" />
 
     <SeekBar
         android:id="@+id/redBar"
@@ -19,7 +19,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Green" />
+        android:text="@string/green" />
 
     <SeekBar
         android:id="@+id/greenBar"
@@ -30,7 +30,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Blue" />
+        android:text="@string/blue" />
 
     <SeekBar
         android:id="@+id/blueBar"

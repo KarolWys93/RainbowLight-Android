@@ -49,7 +49,7 @@ public class AnimationFragment extends Fragment {
         ((Button)view.findViewById(R.id.runBtn)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getContext(), "Run animation",Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), R.string.animation_run_notification,Toast.LENGTH_SHORT).show();
                 animationSelected();
             }
         });

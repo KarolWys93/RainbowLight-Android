@@ -59,12 +59,12 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
         @Override
         public void onConnect(boolean success) {
             if(success){
-                Toast.makeText(getBaseContext(), "Connected!", Toast.LENGTH_LONG).show();
-                ((MenuItem)menu.findItem(R.id.action_connect)).setTitle("Disconnect");
+                Toast.makeText(getBaseContext(), R.string.bluetooth_connected_notification, Toast.LENGTH_LONG).show();
+                ((MenuItem)menu.findItem(R.id.action_connect)).setTitle(R.string.menu_disconnect);
                 ((MenuItem)menu.findItem(R.id.action_connect)).setEnabled(true);
             }else {
-                Toast.makeText(getBaseContext(), "Error while connecting!", Toast.LENGTH_LONG).show();
-                ((MenuItem)menu.findItem(R.id.action_connect)).setTitle("Connect");
+                Toast.makeText(getBaseContext(), R.string.bluetooth_error_while_connectiong_notification, Toast.LENGTH_LONG).show();
+                ((MenuItem)menu.findItem(R.id.action_connect)).setTitle(R.string.menu_connect);
                 ((MenuItem)menu.findItem(R.id.action_connect)).setEnabled(true);
             }
         }
@@ -94,13 +94,13 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
         tabLayout.setupWithViewPager(viewPager);
         //setupTabIcons(tabLayout);
 
-        deviceChooser = new DeviceChooser(this, "Choose device");
+        deviceChooser = new DeviceChooser(this, getString(R.string.device_chooser_title));
         deviceChooser.addListener(new DeviceChooser.OnSelectListener(){
             @Override
             public void onSelect(BluetoothDevice device) {
                 btDevice = device;
                 startConnection();
-                menu.findItem(R.id.action_connect).setTitle("Connecting...");
+                menu.findItem(R.id.action_connect).setTitle(R.string.menu_connecting);
                 menu.findItem(R.id.action_connect).setEnabled(false);
             }
         });
@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
         getMenuInflater().inflate(R.menu.menu, menu);
         this.menu = menu;
         if(ledService != null && ledService.isConnected())
-            menu.findItem(R.id.action_connect).setTitle("Disconnect");
+            menu.findItem(R.id.action_connect).setTitle(R.string.menu_disconnect);
         return true;
     }
 
@@ -132,7 +132,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
         if (id == R.id.action_connect) {
             BluetoothAdapter bt = BluetoothAdapter.getDefaultAdapter();
             if (bt == null){
-                Toast.makeText(getBaseContext(), "Bluetooth aren't supported!", Toast.LENGTH_LONG).show();
+                Toast.makeText(getBaseContext(), R.string.no_bluetooth_notification, Toast.LENGTH_LONG).show();
                 finish();
             }else {
                 if (!bt.isEnabled()){
@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
                         try {
                             writeToLog("Disconnect");
                             ledService.close();
-                            ((MenuItem) menu.findItem(R.id.action_connect)).setTitle("Connect");
+                            ((MenuItem) menu.findItem(R.id.action_connect)).setTitle(R.string.menu_connect);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -175,10 +175,10 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
         super.onActivityResult(requestCode, resultCode, data);
 
         if(requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_OK){
-            Toast.makeText(getBaseContext(), "Bluetooth enabled!", Toast.LENGTH_LONG).show();
+            Toast.makeText(getBaseContext(), R.string.bluetooth_enabled_notification, Toast.LENGTH_LONG).show();
         }
         if (requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_CANCELED){
-            Toast.makeText(getBaseContext(), "Bluetooth can't be enabled!", Toast.LENGTH_LONG).show();
+            Toast.makeText(getBaseContext(), R.string.bluetooth_disabled_notification, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -190,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
                 ledService.setColor(color);
             } catch (IOException e) {
                 e.printStackTrace();
-                Toast.makeText(getBaseContext(), "Connection problem!", Toast.LENGTH_LONG).show();
+                Toast.makeText(getBaseContext(), R.string.bluetooth_problem_notification, Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -203,7 +203,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
                 ledService.setAnimation(param1, param2);
             }catch (IOException e){
                 e.printStackTrace();
-                Toast.makeText(getBaseContext(), "Connection problem!", Toast.LENGTH_LONG).show();
+                Toast.makeText(getBaseContext(), R.string.bluetooth_problem_notification, Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -230,9 +230,9 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(RoundColorFragment.newInstance(), "Color ring");
-        adapter.addFragment(PaletteFragment.newInstance(), "Palette");
-        adapter.addFragment(AnimationFragment.newInstance(), "Animation");
+        adapter.addFragment(RoundColorFragment.newInstance(), getString(R.string.color_ring_tab_name));
+        adapter.addFragment(PaletteFragment.newInstance(), getString(R.string.predef_palette_tab_name));
+        adapter.addFragment(AnimationFragment.newInstance(), getString(R.string.animations_tab_name));
         viewPager.setAdapter(adapter);
     }
 
@@ -245,7 +245,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentColorSe
             ledService.connect(btDevice);
         } catch (IOException e) {
             e.printStackTrace();
-            Toast.makeText(getBaseContext(), "Error while connecting!", Toast.LENGTH_LONG).show();
+            Toast.makeText(getBaseContext(), R.string.bluetooth_error_while_connectiong_notification, Toast.LENGTH_LONG).show();
         }
     }
 

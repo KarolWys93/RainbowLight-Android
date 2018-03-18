@@ -5,10 +5,10 @@
     <item
         android:id="@+id/action_connect"
         android:orderInCategory="100"
-        android:title="Connect"
+        android:title="@string/menu_connect"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_about"
         android:orderInCategory="101"
-        android:title="About" />
+        android:title="@string/menu_about" />
 </menu>

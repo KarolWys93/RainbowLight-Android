@@ -135,7 +135,7 @@ public class RoundColorFragment extends Fragment {
         }
 
 
-        colorRGBChooser = new ColorRGBChooser(this.getActivity(), "Color");
+        colorRGBChooser = new ColorRGBChooser(this.getActivity(), getString(R.string.rgb_color_chooser_title));
         colorRGBChooser.setListener(new ColorRGBChooser.ChangeListener() {
             @Override
             public void onChange(int color) {
@@ -242,7 +242,7 @@ public class RoundColorFragment extends Fragment {
             };
 
             sensorManager.registerListener(sensorListener, lightSensor, SensorManager.SENSOR_DELAY_GAME);//SensorManager.SENSOR_DELAY_UI);
-            Toast.makeText(getContext(), "Auto value mode enabled", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), R.string.auto_value_mode_enabled_notificaton, Toast.LENGTH_SHORT).show();
         }else {
             if (sensorListener != null)
                 sensorManager.unregisterListener(sensorListener);

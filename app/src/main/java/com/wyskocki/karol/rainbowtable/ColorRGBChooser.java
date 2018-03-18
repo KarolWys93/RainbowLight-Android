@@ -48,7 +48,7 @@ public class ColorRGBChooser {
         builder.setTitle(this.title);
         builder.setView(dialogView);
         builder.setCancelable(true);
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.rgb_chooser_confirm_button, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 int r = ((SeekBar) dialogView.findViewById(R.id.redBar)).getProgress();

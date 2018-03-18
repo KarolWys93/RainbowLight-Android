@@ -44,7 +44,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="The application allow wireless control of RGB LED lighting. The application connects to the controller via bluetooth. Thanks to it, you can adjust the color of the diodes to your preferences or choose one of the available animations.\nApplication created by Karol Wyskocki."
+        android:text="@string/about_app_description"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView" />

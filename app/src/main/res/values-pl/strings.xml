@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="animation_1_description">Płynne przejście kolorów</string>
+    <string name="run_animation">Start</string>
+    <string name="animation_speed">szybkość</string>
+    <string name="animation_brightness">jasność</string>
+    <string name="red">Czerwony</string>
+    <string name="green">Zielony</string>
+    <string name="blue">Niebieski</string>
+    <string name="auto_value_checkbox">Automatyczna jasność</string>
+    <string name="rgb_chooser_button">Paleta RGB</string>
+    <string name="menu_connect">Połącz</string>
+    <string name="menu_about">O aplikacji</string>
+    <string name="about_app_description">Aplikacja umożliwia bezprzewodowe sterowanie oświetleniem LED RGB za pośrednictwem połączenia bluetooth. Dzięki aplikacji możesz dostosować kolor oświetlenia do swoich preferencji lub też wybrać jedną z dostępnych animacji. \nAplikacja autorstwa Karola Wyskockiego.</string>
+    <string name="menu_disconnect">Rozłącz</string>
+    <string name="menu_connecting">Łączenie...</string>
+    <string name="predef_palette_tab_name">Paleta</string>
+    <string name="animations_tab_name">Animacje</string>
+    <string name="device_chooser_title">Wybierz urządzenie</string>
+    <string name="rgb_color_chooser_title">Kolor</string>
+    <string name="bluetooth_enabled_notification">Bluetooth włączony!</string>
+    <string name="bluetooth_disabled_notification">Aplikacja wymaga połączenia Bluetooth.</string>
+    <string name="bluetooth_problem_notification">Problem z połączeniem.</string>
+    <string name="bluetooth_connected_notification">Połączono!</string>
+    <string name="bluetooth_error_while_connectiong_notification">Błąd podczas nawiązywania połączenia!</string>
+    <string name="animation_run_notification">Start!</string>
+    <string name="rgb_chooser_confirm_button">OK</string>
+    <string name="auto_value_mode_enabled_notificaton">Tryb Auto włączony</string>
+    <string name="no_bluetooth_notification">Urządzenie nie posiada łączności Bluetooth</string>
+    <string name="color_ring_tab_name">Koło koloru</string>
+</resources>
